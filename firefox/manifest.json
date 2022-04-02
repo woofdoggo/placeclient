@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2,
+    "name": "place proxy",
+    "version": "1.0",
+    "description": "intercept place image diffs for logging",
+
+    "permissions": [
+        "webRequest",
+        "webRequestBlocking",
+        "https://hot-potato.reddit.com/*"
+    ],
+
+    "background": {
+        "scripts": ["placeproxy.js"]
+    }
+}
