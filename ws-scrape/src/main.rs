@@ -1,4 +1,4 @@
-use std::{net::TcpStream, io::Write, fs::{File, OpenOptions}};
+use std::{net::TcpStream, io::Write, fs::{File, OpenOptions}, collections::HashSet};
 
 use websocket::header::Headers;
 
@@ -32,6 +32,8 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
     headers.set_raw("Origin", vec![b"https://www.reddit.com".to_vec()]);
     headers.set_raw("Host", vec![b"gql-realtime-2.reddit.com".to_vec()]);
 
+    let mut grabbed: HashSet<String> = HashSet::new();
+
     let mut ws = websocket::ClientBuilder::new(ENDPOINT)
         .unwrap()
         .custom_headers(&headers)
@@ -57,6 +59,10 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
 
     // receive messages over websocket
     loop {
+        if grabbed.len() > 65536 {
+            grabbed.clear();
+        }
+
         let msg = ws.recv_message()?;
         if let websocket::OwnedMessage::Text(txt) = msg {
             let j: serde_json::Value = serde_json::from_str(&txt).unwrap();
@@ -119,6 +125,9 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
                 },
                 "DiffFrameMessageData" => {
                     let url = data.get("name").unwrap().as_str().unwrap().to_string();
+                    if grabbed.contains(&url) { continue; }
+                    grabbed.insert(url.clone());
+
                     let mut url_bytes = url.as_bytes().to_vec();
                     url_bytes.push(b'\n');
                     
@@ -133,6 +142,9 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
                 },
                 "FullFrameMessageData" => {
                     let url = data.get("name").unwrap().as_str().unwrap().to_string();
+                    if grabbed.contains(&url) { continue; }
+                    grabbed.insert(url.clone());
+
                     let mut url_bytes = url.as_bytes().to_vec();
                     url_bytes.push(b'\n');
 
