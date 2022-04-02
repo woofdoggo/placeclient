@@ -118,30 +118,32 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 },
                 "DiffFrameMessageData" => {
-                    let mut url = data.get("name").unwrap().as_str().unwrap().to_string();
-                    url.push('\n');
+                    let url = data.get("name").unwrap().as_str().unwrap().to_string();
+                    let mut url_bytes = url.as_bytes().to_vec();
+                    url_bytes.push(b'\n');
                     
                     let time = data.get("currentTimestamp").unwrap().as_f64().unwrap();
 
                     if url.ends_with("image") { continue; }
-                    tc.write_all(url.as_bytes()).unwrap();
+                    tc.write_all(&url_bytes).unwrap();
 
                     let msg = format!("diff {} {}", time, url.split("/").last().unwrap());
                     log.write_all(msg.as_bytes()).unwrap();
-                    println!("{}", msg.strip_suffix("\n").unwrap());
+                    println!("{}", msg.trim_end());
                 },
                 "FullFrameMessageData" => {
-                    let mut url = data.get("name").unwrap().as_str().unwrap().to_string();
-                    url.push('\n');
+                    let url = data.get("name").unwrap().as_str().unwrap().to_string();
+                    let mut url_bytes = url.as_bytes().to_vec();
+                    url_bytes.push(b'\n');
 
                     let time = data.get("timestamp").unwrap().as_f64().unwrap();
 
                     if url.ends_with("image") { continue; }
-                    tc.write_all(url.as_bytes()).unwrap();
+                    tc.write_all(&url_bytes).unwrap();
 
                     let msg = format!("full {} {}", time, url.split("/").last().unwrap());
                     log.write_all(msg.as_bytes()).unwrap();
-                    println!("{}", msg.strip_suffix("\n").unwrap());
+                    println!("{}", msg.trim_end());
                 },
                 a => {
                     println!("bad message type: {}", a);

@@ -17,7 +17,18 @@ fn create_builder() -> Builder<GzEncoder<File>> {
 async fn main() {
     let (ctx, crx) = std::sync::mpsc::channel::<String>();
     let (ttx, mut trx) = tokio::sync::mpsc::channel::<(Vec<u8>, String)>(32);
+    let (ntx, mut nrx) = tokio::sync::mpsc::channel::<isize>(32);
 
+    std::thread::spawn(move || {
+        let mut count = 0;
+        loop {
+            let r = nrx.blocking_recv().unwrap();
+            count += r;
+            println!("buf size: {}", count);
+        }
+    });
+
+    let ntxc = ntx.clone();
     std::thread::spawn(move || {
         let tl: TcpListener = TcpListener::bind(("127.0.0.1", 8001)).unwrap();
         let (mut stream, addr) = tl.accept().unwrap();
@@ -30,8 +41,8 @@ async fn main() {
             let bytes = br.read_line(&mut buf).unwrap();
 
             if bytes > 0 {
-                println!("added");
-                ctx.send(String::from_utf8(buf.as_bytes().to_vec()).unwrap()).unwrap();
+                ctx.send(String::from_utf8(buf.trim_end().as_bytes().to_vec()).unwrap()).unwrap();
+                ntxc.blocking_send(1).unwrap();
             }
             buf.clear();
         }
@@ -67,22 +78,27 @@ async fn main() {
     });
 
     loop {
-        let buf = crx.recv().unwrap();
+        let mut tasks = Vec::new();
+        for _ in 0 .. 16 {
+            let buf = crx.recv().unwrap();
 
-        let ttxc = ttx.clone();
-        tokio::spawn(async move {
-            println!("go: {}", &buf);
-            let res = reqwest::get(&buf)
-                .await
-                .unwrap()
-                .bytes()
-                .await
-                .unwrap();
+            let ttxc = ttx.clone();
+            let ntxc = ntx.clone();
+            tasks.push(tokio::spawn(async move {
+                println!("go: {}", &buf);
+                let res = reqwest::get(&buf)
+                    .await
+                    .unwrap()
+                    .bytes()
+                    .await
+                    .unwrap();
 
-            let buftrim = &buf.split("/").last().unwrap();
-            println!("waiting...");
-            ttxc.send((res.to_vec(), buftrim.to_string())).await.unwrap();
-            println!("channel sent");
-        }).await.unwrap();
+                let buftrim = &buf.split("/").last().unwrap();
+                ttxc.send((res.to_vec(), buftrim.to_string())).await.unwrap();
+                ntxc.send(-1).await.unwrap();
+            }));
+        }
+
+        futures::future::join_all(tasks).await;
     }
 }
