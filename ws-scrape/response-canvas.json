@@ -1,0 +1,20 @@
+{
+    "payload":{
+        "data":{
+            "subscribe":{
+                "id":"ca1aafa7-a19d-49e8-be2d-33c1b31135ba",
+                "data":{
+                    "__typename":"DiffFrameMessageData",
+                    "__typename":"DiffFrameMessageData",
+                    "name":"https://hot-potato.reddit.com/media/canvas-images/1648932278612-0-d-bXIB59yT.png",
+                    "currentTimestamp":1.648932278612e+12,
+                    "previousTimestamp":1.648932278501e+12
+                },
+                "__typename":"BasicMessage",
+                "__typename":"BasicMessage"
+            }
+        }
+    },
+    "id":"2",
+    "type":"data"
+}
