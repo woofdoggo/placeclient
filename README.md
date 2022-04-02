@@ -1,45 +1,70 @@
 # placeclient
-Horrendous abomination of an automated /r/place scraper
+Horrendous abomination of an automated /r/place scraper.
 
 # Why
-I got bored after getting myself IP(?) banned from placing pixels and having to
-make a new account every 15 minutes. I intended to make a standalone viewer but
-gave up because it's harder to figure out how to read image data than it is to
-send pixel update requests automatically (thanks for the bot prevention Reddit)
+I got bored after getting myself shadowbanned from placing pixels and having to
+make a new account every 15 minutes.
+
+I intended to make a standalone viewer but gave up because reading pixel data
+seemed harder and I didn't have a use for it without being able to participate 
+anyways. So, I made this instead (yes it reads image data; no, it didn't at
+first - it used a browser extension and a proxy and it was really bad don't look at
+the git history)
 
 # Data
-I've been running this myself since ~2:20 PM EST, April 2. I plan to convert
-the image diffs into a more compact format after /r/place is over and publish
-the data for free use. Check back on the 4th or the 5th.
+I've been running this myself since ~2:20 PM EST, April 2. There are some gaps
+in the data, particularly in the first 5 hours (due to my bad code.) I plan to
+convert the image diffs into a more compact format after /r/place is over and
+publish the data for free use. Check back on the 4th or the 5th.
 
 # Running
-Good luck this thing is bad
+Good luck. Most likely, I will not provide you with any help. You're on your
+own if something doesn't work.
 
-- Change the hardcoded paths in `download/src/main.rs` and `proxy/proxy.py`
-- Get Firefox, Rust/Cargo, and Python 3
-- `cd proxy` and generate a key+cert (`key.pem` and `cert.pem`) with OpenSSL
-- Add the extension in `firefox/` through the `about:debugging` page
-- `cd download && cargo run --release`
-- Open a new terminal and `cd proxy && python proxy.py`
-- Go to the /r/place canvas and zoom out
+Make sure you have at least a few gigabytes of disk space if you plan to run this
+for a while. If you have a bad internet connection this will probably not run
+well (if at all); it uses 200kib/s at pretty much all times.
 
-Reload the page every now and then because the website sucks. Also, make sure
-you don't run out of storage space - depending on what images your client
-requests, storage usage can increase by as much as ~26mb/min. That number might
-climb further if/when the canvas gets expanded again.
+```sh
+# clone the repository
+git clone https://github.com/woofdoggo/placeclient.git
+cd placeclient
+
+# place your token in ws-scrape/token.auth (should be Bearer: XXXXX-XXXXXXXX etc)
+# copy it from network inspector in browser, or use reddit API
+# go to https://www.reddit.com/prefs/apps and create a "script" app.
+# replace YOURUSERNAME, YOURPASSWORD with your username/password
+# replace OAUTHCLIENT with the text beneath "personal use script"
+# replace OAUTHSECRET with the secret text
+curl -X POST -d 'grant_type=password&username=YOURUSERNAME&password=YOURPASSWORD' \
+    --user "OAUTHCLIENT:OAUTHSECRET" \
+    https://www.reddit.com/api/v1/access_token -A "" > ws-scrape/token.auth
+
+# you will also have to adjust hardcoded paths in the download source file:
+# change /mnt/hdd/place.log to YOURLOGPATH.log
+# change /mnt/hdd/place2 to YOURIMAGEPATH
+touch YOURLOGPATH.log
+mkdir YOURIMAGEPATH
+
+# build and run
+cd ws-scrape && cargo build --release
+cd ../download && cargo run --release
+
+# open another terminal for the last command
+# you need to run download first, then ws-scrape
+# but both need to be running for it to do anything
+cd placeclient/ws-scrape && cargo run --release
+
+# prepare to watch your terminal get spammed with output
+```
 
 ### Output
-The `download` program will save whatever /r/place images your browser tries
-to retrieve. All of the images from any given minute are placed into a single
-gzipped tarball.
-
-There are two types of images - full and diff. The names and the contents of
-them should be fairly self explanatory; you can sort them from one another
-pretty easily.
+placeclient will store gzipped tarballs of /r/place images, with 1024 images in
+each tarball. These tarballs will contain a mixture of full and diff images,
+whose names should be fairly self explanatory.
 
 # Todo
-- add automatic refresh to firefox extension
-- extract scraper logic to make it standalone? probably too annoying
+- setup actual auth instead of manually copying my token
 
 # License
 placeclient is licensed under the BSD 2-clause license.
