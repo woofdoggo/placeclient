@@ -67,7 +67,7 @@ async fn main() {
 
             in_tar += 1;
 
-            if in_tar > 128 {
+            if in_tar > 1024 {
                 tb.finish().unwrap();
                 tb = create_builder();
                 in_tar = 0;

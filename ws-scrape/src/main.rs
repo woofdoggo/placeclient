@@ -127,7 +127,7 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
                     if url.ends_with("image") { continue; }
                     tc.write_all(&url_bytes).unwrap();
 
-                    let msg = format!("diff {} {}", time, url.split("/").last().unwrap());
+                    let msg = format!("diff {} {}\n", time, url.split("/").last().unwrap());
                     log.write_all(msg.as_bytes()).unwrap();
                     println!("{}", msg.trim_end());
                 },
@@ -141,7 +141,7 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
                     if url.ends_with("image") { continue; }
                     tc.write_all(&url_bytes).unwrap();
 
-                    let msg = format!("full {} {}", time, url.split("/").last().unwrap());
+                    let msg = format!("full {} {}\n", time, url.split("/").last().unwrap());
                     log.write_all(msg.as_bytes()).unwrap();
                     println!("{}", msg.trim_end());
                 },
