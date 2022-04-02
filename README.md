@@ -11,6 +11,9 @@ anyways. So, I made this instead (yes it reads image data; no, it didn't at
 first - it used a browser extension and a proxy and it was really bad don't look at
 the git history)
 
+The code in this repository is a complete disaster. I don't plan on fixing it
+~~until~~ unless it stops working again.
+
 # Data
 I've been running this myself since ~2:20 PM EST, April 2. There are some gaps
 in the data, particularly in the first 5 hours (due to my bad code.) I plan to
