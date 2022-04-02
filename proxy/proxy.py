@@ -2,15 +2,23 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from ssl import wrap_socket, PROTOCOL_TLS
 from urllib.request import urlopen
 
+import socket
+
+s = socket.socket()
+s.connect(("127.0.0.1", 8001))
+
 class Getter(SimpleHTTPRequestHandler):
     def do_GET(self):
         imgurl = "https://hot-potato.reddit.com/media/canvas-images" + self.path
-        print(self.path[1:])
 
         self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
-addr = ("localhost", 8000)
+        s.send(imgurl.encode())
+        self.copyfile(urlopen(imgurl), self.wfile)
+
+addr = ("127.0.0.1", 8000)
 httpd = HTTPServer(addr, Getter)
 httpd.socket = wrap_socket(
         httpd.socket,

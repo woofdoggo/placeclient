@@ -1,8 +1,0 @@
-[package]
-name = "placeclient"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-glam = "0.20.3"
-miniquad = "0.2.55"
