@@ -52,6 +52,7 @@ typedef struct {
 } ImgDiff;
 
 const char *src = "/mnt/hdd/place-ext/\0";
+const char *dst = "/mnt/hdd/place-final2/\0";
 
 bool sortbyname(std::string a, std::string b) {
     char filetime[14];
@@ -77,13 +78,6 @@ int main() {
     char filetime[14];
     filetime[13] = '\0';
 
-    uint32_t *refimg = (uint32_t*)malloc(2000 * 2000 * sizeof(uint32_t));
-
-    // alloc space for 2^26 diff instances, should be sufficient
-    // at 16 bytes each this uses 1gb of RAM, which is fine
-    auto diffs = new std::vector<ImgDiff>();
-    diffs->reserve(67108864);
-
     auto files = new std::vector<std::string>();
 
     // get PNGs
@@ -104,6 +98,9 @@ int main() {
 
     // generate diffs
     for (uint64_t a = 0; a < files->size(); a++) {
+        auto diffs = new std::vector<ImgDiff>();
+        diffs->reserve(8192);
+
         const char *n = files->at(a).c_str();
         char filename[512];
         strcpy(filename, src);
@@ -111,7 +108,7 @@ int main() {
 
         FILE* file = fopen(filename, "rb");
         if (file == NULL) {
-            die(filename);
+            die(strerror(errno));
         }
         
         wuffs_aux::DecodeImageCallbacks callbacks;
@@ -138,25 +135,7 @@ int main() {
         bool full = strstr(filename, "-f-");
         wuffs_base__table_u8 tab = img.pixbuf.plane(0);
 
-        char num_canvas = n[14];
-        int xoff, yoff;
-
-        switch (num_canvas) {
-            case '0':
-                break;
-            case '1':
-                xoff = 1000;
-                break;
-            case '2':
-                yoff = 1000;
-                break;
-            case '3':
-                xoff = 1000;
-                yoff = 1000;
-                break;
-        }
-
-        if (full) {
+        /*
             // process full image - check every single pixel
             for (uint32_t x = 0; x < 1000; x++) {
                 for (uint32_t y = 0; y < 1000; y++) {
@@ -164,7 +143,7 @@ int main() {
                     int cindex = (x + xoff) + (y + yoff) * 1000;
                     uint32_t color = ((uint32_t*) tab.ptr)[index];
                     
-                    if (refimg[cindex] != color) {
+                    if ((color & 0xFF000000) != 0 && refimg[cindex] != color) {
                         ImgDiff d;
                         d.x = 0;
                         d.y = 0;
@@ -176,16 +155,17 @@ int main() {
                     }
                 }
             }
-        } else {
+        */
+
+
+        if (!full) {
             // process diff image - apply only opaque pixels
             for (uint32_t x = 0; x < 1000; x++) {
                 for (uint32_t y = 0; y < 1000; y++) {
                     int index = x + y * 1000;
                     uint32_t color = ((uint32_t*) tab.ptr)[index];
 
-                    if ((color & 0xFF) == 0xFF) {
-                        int cindex = (x + xoff) + (y + yoff) * 1000;
-
+                    if ((color & 0xFF000000) != 0) {
                         ImgDiff d;
                         d.x = x;
                         d.y = y;
@@ -193,17 +173,36 @@ int main() {
                         d.c = color;
 
                         diffs->push_back(d);
-                        refimg[cindex] = color;
                     }
                 }
             }
+
+            // write pixels in diff image
+            strcpy(filename, dst);
+            char filename2[32];
+            memcpy(filename2, n, 26);
+            filename2[26] = '\0';
+            strcat(filename, filename2);
+
+            FILE* writefh = fopen(filename, "w");
+            if (writefh == NULL) {
+                die(strerror(errno));
+            }
+            
+            size_t written = fwrite((void*)diffs->data(), sizeof(ImgDiff), diffs->size(), writefh);
+            if (written != diffs->size()) {
+                die(strerror(errno));
+            }
+
+            fflush(writefh);
+            fclose(writefh);
+
+            printf("diffs: %lu, done: %s\n", diffs->size(), n);
         }
 
         fclose(file);
-        printf("diffs: %lu, done: %s\n", diffs->size(), n);
+        delete diffs;
     }
-
-    // write diffs
 
     // cleanup
     closedir(dir);
