@@ -1,5 +1,11 @@
+# list targets
 default:
-    g++ diff.cpp -Wall -Wextra -pedantic -o diff -O2 -m64
+    @just --list
 
-clang:
-    clang++ diff.cpp -Wall -Wextra -pedantic -o diff -O2 -m64
+# build bin.cpp with g++
+bin:
+    g++ bin.cpp -Wall -Wextra -pedantic -o bin -O2 -m64
+
+# build diff.cpp with g++
+diff:
+    g++ diff.cpp -Wall -Wextra -pedantic -o diff -O2 -m64

@@ -45,7 +45,6 @@ void die(std::string msg) {
 }
 
 typedef struct {
-    uint64_t time;
     uint32_t c;
     uint16_t x;
     uint16_t y;
@@ -74,9 +73,6 @@ int main() {
     if (dir == NULL) {
         die("fail open src");
     }
-
-    char filetime[14];
-    filetime[13] = '\0';
 
     auto files = new std::vector<std::string>();
 
@@ -127,10 +123,6 @@ int main() {
             die("invalid image");
         }
 
-        // get time for diffs
-        memcpy(filetime, n, 13);
-        uint64_t time = atoll(filetime);
-
         // full or diff image
         bool full = strstr(filename, "-f-");
         wuffs_base__table_u8 tab = img.pixbuf.plane(0);
@@ -169,7 +161,6 @@ int main() {
                         ImgDiff d;
                         d.x = x;
                         d.y = y;
-                        d.time = time;
                         d.c = color;
 
                         diffs->push_back(d);
