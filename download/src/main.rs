@@ -1,6 +1,5 @@
-use std::{net::TcpListener, io::{Read, BufReader, BufRead}, fs::File};
+use std::{net::TcpListener, io::{BufReader, BufRead}, fs::File};
 
-use chrono::Timelike;
 use flate2::{write::GzEncoder, Compression};
 use tar::{Header, Builder};
 
@@ -30,21 +29,44 @@ async fn main() {
 
     let ntxc = ntx.clone();
     std::thread::spawn(move || {
-        let tl: TcpListener = TcpListener::bind(("127.0.0.1", 8001)).unwrap();
-        let (mut stream, addr) = tl.accept().unwrap();
-        println!("accepted connection: {}", addr);
+        'outer: loop {
+            // sleep if connection error
+            std::thread::sleep(std::time::Duration::from_secs(2));
+            println!("starting conn");
 
-        stream.set_read_timeout(None).unwrap();
-        let mut buf = String::new();
-        let mut br = BufReader::new(stream);
-        loop {
-            let bytes = br.read_line(&mut buf).unwrap();
+            let tl: TcpListener = match TcpListener::bind(("127.0.0.1", 8001)) {
+                Ok(v) => v,
+                Err(_) => continue
+            };
 
-            if bytes > 0 {
-                ctx.send(String::from_utf8(buf.trim_end().as_bytes().to_vec()).unwrap()).unwrap();
-                ntxc.blocking_send(1).unwrap();
+            let (stream, addr) = match tl.accept() {
+                Ok(v) => v,
+                Err(_) => continue
+            };
+
+            stream.set_read_timeout(Some(std::time::Duration::from_secs(10))).unwrap();
+
+            println!("accepted connection: {}", addr);
+
+            if stream.set_read_timeout(None).is_err() { continue; }
+            let mut buf = String::new();
+            let mut br = BufReader::new(stream);
+
+            loop {
+                let bytes = match br.read_line(&mut buf) {
+                    Ok(v) => v,
+                    Err(_) => continue 'outer
+                };
+
+                if bytes > 0 {
+                    ctx.send(String::from_utf8(buf.trim_end().as_bytes().to_vec()).unwrap()).unwrap();
+                    ntxc.blocking_send(1).unwrap();
+                } else {
+                    continue 'outer
+                }
+
+                buf.clear();
             }
-            buf.clear();
         }
     });
 

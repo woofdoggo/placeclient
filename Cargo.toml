@@ -2,5 +2,7 @@
 
 members = [
     "download",
-    "ws-scrape"
+    "ws-scrape",
+    
+    "proc-diff"
 ]
