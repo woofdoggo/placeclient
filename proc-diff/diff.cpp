@@ -52,7 +52,7 @@ typedef struct {
 } ImgDiff;
 
 const char *src = "/mnt/hdd/place-ext/\0";
-const char *dst = "/mnt/hdd/place-final2/\0";
+const char *dst = "/mnt/hdd/place-final/\0";
 
 bool sortbyname(std::string a, std::string b) {
     char filetime[14];
