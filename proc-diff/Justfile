@@ -1,0 +1,5 @@
+default:
+    g++ diff.cpp -Wall -Wextra -pedantic -o diff -O2 -m64
+
+clang:
+    clang++ diff.cpp -Wall -Wextra -pedantic -o diff -O2 -m64
