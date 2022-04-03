@@ -11,7 +11,7 @@ anyways. So, I made this instead (yes it reads image data; no, it didn't at
 first - it used a browser extension and a proxy and it was really bad don't look at
 the git history)
 
-The code in this repository is a complete disaster. I don't plan on fixing it
+The code in this repository is a complete disaster. I don't plan on improving it
 ~~until~~ unless it stops working again.
 
 # Data
@@ -26,22 +26,20 @@ own if something doesn't work.
 
 Make sure you have at least a few gigabytes of disk space if you plan to run this
 for a while. If you have a bad internet connection this will probably not run
-well (if at all); it uses 200kib/s at pretty much all times.
+well (if at all); it uses 50kb/s at virtually all times.
 
 ```sh
 # clone the repository
 git clone https://github.com/woofdoggo/placeclient.git
 cd placeclient
 
-# place your token in ws-scrape/token.auth (should be Bearer: XXXXX-XXXXXXXX etc)
-# copy it from network inspector in browser, or use reddit API
-# go to https://www.reddit.com/prefs/apps and create a "script" app.
-# replace YOURUSERNAME, YOURPASSWORD with your username/password
-# replace OAUTHCLIENT with the text beneath "personal use script"
-# replace OAUTHSECRET with the secret text
-curl -X POST -d 'grant_type=password&username=YOURUSERNAME&password=YOURPASSWORD' \
-    --user "OAUTHCLIENT:OAUTHSECRET" \
-    https://www.reddit.com/api/v1/access_token -A "" > ws-scrape/token.auth
+# setup reddit auth
+# go to https://reddit.com/prefs/apps and create a script app
+cd ws-scrape
+echo YOURUSERNAME > username.auth
+echo YOURPASSWORD > password.auth
+echo YOURCLIENTID > client.auth
+echo YOURSECRET > secret.auth
 
 # you will also have to adjust hardcoded paths in the download source file:
 # change /mnt/hdd/place.log to YOURLOGPATH.log
@@ -57,17 +55,12 @@ cd ../download && cargo run --release
 # you need to run download first, then ws-scrape
 # but both need to be running for it to do anything
 cd placeclient/ws-scrape && cargo run --release
-
-# prepare to watch your terminal get spammed with output
 ```
 
 ### Output
 placeclient will store gzipped tarballs of /r/place images, with 1024 images in
 each tarball. These tarballs will contain a mixture of full and diff images,
 whose names should be fairly self explanatory.
-
-# Todo
-- setup actual auth instead of manually copying my token
 
 # License
 placeclient is licensed under the BSD 2-clause license.
