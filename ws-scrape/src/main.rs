@@ -11,11 +11,12 @@ async fn main() {
     loop {
         match go().await { 
             Ok(_) => eprintln!("connection terminated gracefully"),
-            Err(e) => eprintln!("connection error: {}", e)
+            Err(e) => {
+                eprintln!("connection error: {}", e);
+                // sleep 10sec if connection fails
+                std::thread::sleep(std::time::Duration::from_secs(10));
+            }
         };
-
-        // sleep 10sec if connection fails
-        std::thread::sleep(std::time::Duration::from_secs(10));
     }
 }
 
@@ -58,6 +59,7 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
     headers.set_raw("Host", vec![b"gql-realtime-2.reddit.com".to_vec()]);
 
     let mut grabbed: HashSet<String> = HashSet::new();
+    let mut configs: HashSet<i64> = HashSet::new();
 
     let mut ws = websocket::ClientBuilder::new(ENDPOINT)?
         .custom_headers(&headers)
@@ -136,9 +138,6 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
                         let tag = i.get("index")
                             .ok_or("fail canvas->index")?
                             .as_i64().ok_or("fail canvas->as_i64")?;
-                        let mut msg = include_str!("../../notes/canvas.json").to_string();
-                        msg = msg.replace("PUTTHETAGHERE", &tag.to_string());
-                        ws.send_message(&websocket::Message::text(msg))?;
 
                         let msg = format!(
                             "canvas {} {} {}\n",
@@ -148,13 +147,26 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
                         );
 
                         log.write_all(msg.as_bytes())?;
+
+                        if configs.contains(&tag) {
+                            continue;
+                        }
+
+                        configs.insert(tag);
+                        let mut msg = include_str!("../../notes/canvas.json").to_string();
+                        msg = msg.replace("PUTTHETAGHERE", &tag.to_string());
+                        ws.send_message(&websocket::Message::text(msg))?;
                     }
                 },
                 "DiffFrameMessageData" => {
                     let url = data.get("name").ok_or("diff: fail name")?
                         .as_str().ok_or("diff: fail name->as_str")?.to_string();
 
-                    if grabbed.contains(&url) { continue; }
+                    if grabbed.contains(&url) {
+                        println!("dupe {}", url);
+                        continue;
+                    }
+
                     grabbed.insert(url.clone());
 
                     let mut url_bytes = url.as_bytes().to_vec();
@@ -175,7 +187,11 @@ async fn go() -> Result<(), Box<dyn std::error::Error>> {
                     let url = data.get("name").ok_or("full: fail name")?
                         .as_str().ok_or("full: fail name->as_str")?.to_string();
 
-                    if grabbed.contains(&url) { continue; }
+                    if grabbed.contains(&url) {
+                        println!("dupe {}", url);
+                        continue;
+                    }
+
                     grabbed.insert(url.clone());
 
                     let mut url_bytes = url.as_bytes().to_vec();
