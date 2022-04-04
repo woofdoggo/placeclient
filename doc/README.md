@@ -28,13 +28,23 @@ license, all other source code contained within this repository is under the
 # Table of Contents
 
 - [Examples](#examples)
+  - [Decoder](#decoder)
 - [Data Format](#data-format)
   - [Diff Blobs](#diff-blobs)
   - [Diff Elements](#diff-elements)
   - [Color Table](#color-table)
 
 # Examples
-TODO
+
+Here are some simple example usages of the diff set:
+
+## Decoder
+
+> [Source code](https://github.com/woofdoggo/placeclient/blob/main/doc/decode.py)
+
+```
+python decode.py <path-to-diffs-bin>
+```
 
 # Data Format
 
