@@ -45,8 +45,6 @@ void die(std::string msg) {
     exit(1);
 }
 
-const char *src = "/mnt/hdd/place-ext/";
-
 bool sortbyname(std::string a, std::string b) {
     char filetime[14];
     filetime[13] = '\0';
@@ -60,7 +58,7 @@ bool sortbyname(std::string a, std::string b) {
     return at < bt;
 }
 
-int main() {
+int main(int argc, char *const argv[]) {
     std::unordered_map<uint32_t, uint8_t> colors {
         { 0xFF6D001A, 0 },
         { 0xFFBE0039, 1 },
@@ -96,23 +94,50 @@ int main() {
         { 0xFFFFFFFF, 31 }
     };
 
-    FILE *writefh = fopen("/mnt/hdd/place-diffs.bin", "w");
+#ifdef READ_TRUTH
+    if (argc < 5) {
+#else
+    if (argc < 4) {
+#endif
+        die("not enough arguments");
+    }
+
+    FILE *truthwrite = fopen(argv[3], "w");
+    if (truthwrite == NULL) {
+        die(strerror(errno));
+    }
+    printf("opened truthwrite\n");
+
+    FILE *writefh = fopen(argv[2], "w");
     if (writefh == NULL) {
         die(strerror(errno));
     }
+    printf("opened writefh\n");
 
     DIR* dir;
     struct dirent *direntry;
-    dir = opendir(src);
+    dir = opendir(argv[1]);
     if (dir == NULL) {
-        die("fail open src");
+        die(strerror(errno));
     }
+    printf("opened directory\n");
 
     auto files = new std::vector<std::string>();
     uint32_t *truth = (uint32_t*)malloc(sizeof(uint32_t) * 2000 * 2000);
     if (truth == NULL) {
         die("fail alloc image");
     }
+
+#ifdef READ_TRUTH
+    FILE *truthfh = fopen(argv[4], "r");
+    if (truthfh == NULL) {
+        die("fail read truth");
+    }
+
+    fread(truth, sizeof(uint32_t), 2000 * 2000, truthfh);
+    printf("read truth source\n");
+    fclose(truthfh);
+#endif
 
     // get PNGs
     while (1) {
@@ -137,11 +162,12 @@ int main() {
 
         const char *n = files->at(a).c_str();
         char filename[512];
-        strcpy(filename, src);
+        strcpy(filename, argv[1]);
         strcat(filename, n);
 
         FILE* file = fopen(filename, "rb");
         if (file == NULL) {
+            printf("failed to read %s\n", filename);
             die(strerror(errno));
         }
         
@@ -227,6 +253,10 @@ int main() {
         fclose(file);
         delete diffs;
     }
+
+    // write truth state
+    fwrite(truth, sizeof(uint32_t), 2000 * 2000, truthwrite);
+    fclose(truthwrite);
 
     // cleanup
     fclose(writefh);
