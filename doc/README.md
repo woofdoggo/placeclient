@@ -64,7 +64,7 @@ an image from hours or days of data.
 > [Source code](https://github.com/woofdoggo/placeclient/blob/main/doc/image.py)
 
 ```sh
-python image.py <path-to-diffs> <unix-millis>
+python image.py <path-to-diffs> <path-to-out> <unix-millis>
 
 # example for part 1 data:
 python image.py /mnt/hdd/place-day2.bin out.png 1648939182335
