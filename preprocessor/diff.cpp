@@ -154,6 +154,7 @@ int main(int argc, char *const argv[]) {
     }
 
     std::sort(files->begin(), files->end(), sortbyname);
+    uint32_t processed = 0;
 
     // generate diffs
     for (uint64_t a = 0; a < files->size(); a++) {
@@ -176,6 +177,7 @@ int main(int argc, char *const argv[]) {
         wuffs_aux::DecodeImageResult img = wuffs_aux::DecodeImage(callbacks, input);
 
         if (!img.error_message.empty()) {
+            printf("invalid image %s\n", n);
             die(img.error_message);
         }
 
@@ -248,10 +250,18 @@ int main(int argc, char *const argv[]) {
         }
 
         fflush(writefh);
-        printf("diffs: %lu, done: %s\n", diffs->size(), n);
+        printf("num: %u, diffs: %lu, done: %s\n", processed, diffs->size(), n);
 
         fclose(file);
         delete diffs;
+
+        processed++;
+        if (processed % 8192 == 0) {
+            fwrite(truth, sizeof(uint32_t), 2000 * 2000, truthwrite);
+            fflush(truthwrite);
+            fseek(truthwrite, 0L, SEEK_SET);
+            printf("saved progress\n");
+        }
     }
 
     // write truth state
