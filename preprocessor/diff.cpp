@@ -15,15 +15,16 @@
 // limitations under the License.
 
 #include <errno.h>
-#include <string.h>
 #include <dirent.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <cstring>
+#include <unordered_map>
 #include <vector>
 
 #define WUFFS_IMPLEMENTATION
@@ -44,14 +45,7 @@ void die(std::string msg) {
     exit(1);
 }
 
-typedef struct {
-    uint32_t c;
-    uint16_t x;
-    uint16_t y;
-} ImgDiff;
-
-const char *src = "/mnt/hdd/place-ext/\0";
-const char *dst = "/mnt/hdd/place-final/\0";
+const char *src = "/mnt/hdd/place-ext/";
 
 bool sortbyname(std::string a, std::string b) {
     char filetime[14];
@@ -67,6 +61,46 @@ bool sortbyname(std::string a, std::string b) {
 }
 
 int main() {
+    std::unordered_map<uint32_t, uint8_t> colors {
+        { 0xFF6D001A, 0 },
+        { 0xFFBE0039, 1 },
+        { 0xFFFF4500, 2 },
+        { 0xFFFFA800, 3 },
+        { 0xFFFFD635, 4 },
+        { 0xFFFFF8B8, 5 },
+        { 0xFF00A368, 6 },
+        { 0xFF00CC78, 7 },
+        { 0xFF7EED56, 8 },
+        { 0xFF00756F, 9 },
+        { 0xFF009EAA, 10 },
+        { 0xFF00CCC0, 11 },
+        { 0xFF2450A4, 12 },
+        { 0xFF3690EA, 13 },
+        { 0xFF51E9F4, 14 },
+        { 0xFF493AC1, 15 },
+        { 0xFF6A5CFF, 16 },
+        { 0xFF94B3FF, 17 },
+        { 0xFF811E9F, 18 },
+        { 0xFFB44AC0, 19 },
+        { 0xFFE4ABFF, 20 },
+        { 0xFFDE107F, 21 },
+        { 0xFFFF3881, 22 },
+        { 0xFFFF99AA, 23 },
+        { 0xFF6D482F, 24 },
+        { 0xFF9C6926, 25 },
+        { 0xFFFFB470, 26 },
+        { 0xFF000000, 27 },
+        { 0xFF515252, 28 },
+        { 0xFF898D90, 29 },
+        { 0xFFD4D7D9, 30 },
+        { 0xFFFFFFFF, 31 }
+    };
+
+    FILE *writefh = fopen("/mnt/hdd/place-diffs.bin", "w");
+    if (writefh == NULL) {
+        die(strerror(errno));
+    }
+
     DIR* dir;
     struct dirent *direntry;
     dir = opendir(src);
@@ -98,7 +132,7 @@ int main() {
 
     // generate diffs
     for (uint64_t a = 0; a < files->size(); a++) {
-        auto diffs = new std::vector<ImgDiff>();
+        auto diffs = new std::vector<uint32_t>();
         diffs->reserve(8192);
 
         const char *n = files->at(a).c_str();
@@ -159,37 +193,35 @@ int main() {
                 uint32_t color = ((uint32_t*) tab.ptr)[index];
 
                 if ((color & 0xFF000000) != 0 && truth[cindex] != color) {
-                    ImgDiff d;
-                    d.x = x + xoff;
-                    d.y = y + yoff;
-                    d.c = color;
+                    uint32_t diffint = 0;
+                    diffint |= (x + xoff) & 0x0FFF;
+                    diffint |= ((y + yoff) & 0x0FFF) << 12;
+                    diffint |= colors[color] << 24;
 
-                    diffs->push_back(d);
+                    diffs->push_back(diffint);
                     truth[cindex] = color;
                 }
             }
         }
 
-        // write pixels in diff image
-        strcpy(filename, dst);
-        char filename2[32];
-        memcpy(filename2, n, 26);
-        filename2[26] = '\0';
-        strcat(filename, filename2);
+        // write time
+        char filetime[14];
+        filetime[13] = '\0';
+        memcpy(filetime, n, 13);
+        uint64_t time = atoll(filetime);
+        fwrite((void*)&time, sizeof(uint64_t), 1, writefh);
 
-        FILE* writefh = fopen(filename, "w");
-        if (writefh == NULL) {
-            die(strerror(errno));
-        }
-        
-        size_t written = fwrite((void*)diffs->data(), sizeof(ImgDiff), diffs->size(), writefh);
+        // write size
+        uint32_t s = diffs->size();
+        fwrite((void*)&s, sizeof(uint32_t), 1, writefh);
+
+        // write diffs
+        size_t written = fwrite((void*)diffs->data(), sizeof(uint32_t), diffs->size(), writefh);
         if (written != diffs->size()) {
             die(strerror(errno));
         }
 
         fflush(writefh);
-        fclose(writefh);
-
         printf("diffs: %lu, done: %s\n", diffs->size(), n);
 
         fclose(file);
@@ -197,6 +229,7 @@ int main() {
     }
 
     // cleanup
+    fclose(writefh);
     closedir(dir);
     printf("done\n");
     return 0;
