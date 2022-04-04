@@ -65,13 +65,6 @@ int main() {
     
     for (uint64_t i = 0; i < files->size(); i++) {
         auto filename = files->at(i);
-        bool is_full = strstr(filename.c_str(), ".png");
-
-        if (is_full) {
-            fputs("FULL", writefh);
-        } else {
-            fputs("DIFF", writefh);
-        }
 
         char filetime[14];
         filetime[13] = '\0';

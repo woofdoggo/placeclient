@@ -75,6 +75,10 @@ int main() {
     }
 
     auto files = new std::vector<std::string>();
+    uint32_t *truth = (uint32_t*)malloc(sizeof(uint32_t) * 2000 * 2000);
+    if (truth == NULL) {
+        die("fail alloc image");
+    }
 
     // get PNGs
     while (1) {
@@ -124,72 +128,69 @@ int main() {
         }
 
         // full or diff image
-        bool full = strstr(filename, "-f-");
         wuffs_base__table_u8 tab = img.pixbuf.plane(0);
 
-        /*
-            // process full image - check every single pixel
-            for (uint32_t x = 0; x < 1000; x++) {
-                for (uint32_t y = 0; y < 1000; y++) {
-                    int index = x + y * 1000;
-                    int cindex = (x + xoff) + (y + yoff) * 1000;
-                    uint32_t color = ((uint32_t*) tab.ptr)[index];
-                    
-                    if ((color & 0xFF000000) != 0 && refimg[cindex] != color) {
-                        ImgDiff d;
-                        d.x = 0;
-                        d.y = 0;
-                        d.time = 0;
-                        d.c = 0;
+        char num_canvas = n[14];
+        int xoff = 0;
+        int yoff = 0;
 
-                        diffs->push_back(d);
-                        refimg[cindex] = color;
-                    }
-                }
-            }
-        */
-
-
-        if (!full) {
-            // process diff image - apply only opaque pixels
-            for (uint32_t x = 0; x < 1000; x++) {
-                for (uint32_t y = 0; y < 1000; y++) {
-                    int index = x + y * 1000;
-                    uint32_t color = ((uint32_t*) tab.ptr)[index];
-
-                    if ((color & 0xFF000000) != 0) {
-                        ImgDiff d;
-                        d.x = x;
-                        d.y = y;
-                        d.c = color;
-
-                        diffs->push_back(d);
-                    }
-                }
-            }
-
-            // write pixels in diff image
-            strcpy(filename, dst);
-            char filename2[32];
-            memcpy(filename2, n, 26);
-            filename2[26] = '\0';
-            strcat(filename, filename2);
-
-            FILE* writefh = fopen(filename, "w");
-            if (writefh == NULL) {
-                die(strerror(errno));
-            }
-            
-            size_t written = fwrite((void*)diffs->data(), sizeof(ImgDiff), diffs->size(), writefh);
-            if (written != diffs->size()) {
-                die(strerror(errno));
-            }
-
-            fflush(writefh);
-            fclose(writefh);
-
-            printf("diffs: %lu, done: %s\n", diffs->size(), n);
+        switch (num_canvas) {
+            case '0':
+                break;
+            case '1':
+                xoff = 1000;
+                break;
+            case '2':
+                yoff = 1000;
+                break;
+            case '3':
+                xoff = 1000;
+                yoff = 1000;
+                break;
+            default:
+                die("invalid canvas num");
         }
+
+        // process diff image - apply only opaque pixels
+        for (uint32_t x = 0; x < 1000; x++) {
+            for (uint32_t y = 0; y < 1000; y++) {
+                int index = x + y * 1000;
+                int cindex = (x + xoff) + (y + yoff) * 2000;
+                uint32_t color = ((uint32_t*) tab.ptr)[index];
+
+                if ((color & 0xFF000000) != 0 && truth[cindex] != color) {
+                    ImgDiff d;
+                    d.x = x + xoff;
+                    d.y = y + yoff;
+                    d.c = color;
+
+                    diffs->push_back(d);
+                    truth[cindex] = color;
+                }
+            }
+        }
+
+        // write pixels in diff image
+        strcpy(filename, dst);
+        char filename2[32];
+        memcpy(filename2, n, 26);
+        filename2[26] = '\0';
+        strcat(filename, filename2);
+
+        FILE* writefh = fopen(filename, "w");
+        if (writefh == NULL) {
+            die(strerror(errno));
+        }
+        
+        size_t written = fwrite((void*)diffs->data(), sizeof(ImgDiff), diffs->size(), writefh);
+        if (written != diffs->size()) {
+            die(strerror(errno));
+        }
+
+        fflush(writefh);
+        fclose(writefh);
+
+        printf("diffs: %lu, done: %s\n", diffs->size(), n);
 
         fclose(file);
         delete diffs;
