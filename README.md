@@ -5,6 +5,10 @@ See the [docs](https://github.com/woofdoggo/placeclient/tree/main/doc) for
 more details.
 
 # Navigating
+
+The code quality is quite bad, you've been warned.
+Data will be made available in [Releases](https://github.com/woofdoggo/placeclient/releases).
+
 - [doc](https://github.com/woofdoggo/placeclient/tree/main/doc) -> documentation about the project and dataset
 - [download](https://github.com/woofdoggo/placeclient/tree/main/download) -> downloads and gzips /r/place images
 - [notes](https://github.com/woofdoggo/placeclient/tree/main/notes) -> various notes about the /r/place WebSocket protocol
