@@ -29,6 +29,7 @@ license, all other source code contained within this repository is under the
 
 - [Examples](#examples)
   - [Decoder](#decoder)
+  - [Image](#image)
 - [Data Format](#data-format)
   - [Diff Blobs](#diff-blobs)
   - [Diff Elements](#diff-elements)
@@ -36,15 +37,45 @@ license, all other source code contained within this repository is under the
 
 # Examples
 
-Here are some simple example usages of the diff set:
+Here are some simple example usages of the diff set. These are quite slow since
+they're written in Python, but it should be fairly trivial to port them to the
+language of your choice.
 
 ## Decoder
 
+Functions as both a simple library for decoding the diff files and as a short
+usage example. **This program is quite slow and will output potentially millions
+of lines of text. Comment out the for loop over individual diffs to run faster.**
+
 > [Source code](https://github.com/woofdoggo/placeclient/blob/main/doc/decode.py)
 
+```sh
+python decode.py <path-to-diffs>
 ```
-python decode.py <path-to-diffs-bin>
+
+- `path-to-diffs` - path to the diffs `.bin` file
+
+## Image
+
+Creates an image from the r/place data at a specified time. Requires Pillow and
+numpy. This applies the diffs linearly, and as such is quite slow when generating
+an image from hours or days of data.
+
+> [Source code](https://github.com/woofdoggo/placeclient/blob/main/doc/image.py)
+
+```sh
+python image.py <path-to-diffs> <unix-millis>
+
+# example for part 1 data:
+python image.py /mnt/hdd/place-day2.bin out.png 1648939182335
 ```
+
+- `path-to-diffs` - path to the diffs `.bin` file
+- `path-to-out` - path to the image output destination
+- `unix-millis` - unix millis timestamp to generate the image at
+
+Output of above example usage:
+![place at around 6:40 PM EST, April 2](https://github.com/woofdoggo/placeclient/blob/main/doc/out.png?raw=true)
 
 # Data Format
 

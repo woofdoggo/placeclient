@@ -91,7 +91,7 @@ if __name__ == "__main__":
             break
 
         for diff in blob.diffs:
-            print(f"diff (x: {diff.x}, y: {diff.y}, color: {hex(diff.color)}", flush=False);
+            print(f"diff (x: {diff.x}, y: {diff.y}, color: {hex(diff.color)})");
 
         print(f"blob (time: {blob.time}, size: {blob.size})")
         blobs += 1

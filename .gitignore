@@ -1,5 +1,5 @@
+__pycache__
 target
-*.pem
-*.auth
 diff
-bin
+
+*.auth
