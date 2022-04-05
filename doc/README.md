@@ -5,7 +5,7 @@ download the raw data. The archives contain data from April 2 at circa 2:20 PM
 Eastern Time onwards, with some gaps interspersed throughout early on due to
 mishaps on my part with the scraper.~~
 
-> The full dataset will be made available once the event ends.
+> The full diff file is currently being generated. Check back soon!
 
 Check out ProstoSanja's [place-2022](https://github.com/ProstoSanja/place-2022)
 project for a more complete dataset. Theirs contains full images, while my
