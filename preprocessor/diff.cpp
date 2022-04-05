@@ -177,8 +177,10 @@ int main(int argc, char *const argv[]) {
         wuffs_aux::DecodeImageResult img = wuffs_aux::DecodeImage(callbacks, input);
 
         if (!img.error_message.empty()) {
-            printf("invalid image %s\n", n);
-            die(img.error_message);
+            fprintf(stderr, "invalid image %s\n", n);
+            printf("%s\n", img.error_message.c_str());
+            fclose(file);
+            continue;
         }
 
         if (!img.pixbuf.pixel_format().is_interleaved()) {
