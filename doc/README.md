@@ -20,8 +20,7 @@ A link to this page would suffice.
 
 With the exceptions of [Wuffs](https://github.com/woofdoggo/placeclient/blob/main/preprocessor/wuffs.c),
 which is under the [Apache 2.0](https://github.com/woofdoggo/placeclient/blob/main/LICENSE-WUFFS)
-license, and the timelapse program, which uses LGPL-2.1 code from libav,
-all other source code contained within this repository is under the
+license, all other source code contained within this repository is under the
 [BSD 2-clause license](https://github.com/woofdoggo/placeclient/blob/main/LICENSE).
 
 # Table of Contents
