@@ -1,11 +1,9 @@
 # place archive
 
-~~See the [Releases](https://github.com/woofdoggo/placeclient/releases) page to
+See the [Releases](https://github.com/woofdoggo/placeclient/releases) page to
 download the raw data. The archives contain data from April 2 at circa 2:20 PM
 Eastern Time onwards, with some gaps interspersed throughout early on due to
-mishaps on my part with the scraper.~~
-
-> The full diff file is currently being generated. Check back soon!
+mishaps on my part with the scraper.
 
 Check out ProstoSanja's [place-2022](https://github.com/ProstoSanja/place-2022)
 project for a more complete dataset. Theirs contains full images, while my
@@ -20,9 +18,10 @@ dataset contains a sequence of changes to the image at a greater frequency
 If you use this data, credit would be appreciated (but is not required.)
 A link to this page would suffice.
 
-With the exception of [Wuffs](https://github.com/woofdoggo/placeclient/blob/main/preprocessor/wuffs.c),
+With the exceptions of [Wuffs](https://github.com/woofdoggo/placeclient/blob/main/preprocessor/wuffs.c),
 which is under the [Apache 2.0](https://github.com/woofdoggo/placeclient/blob/main/LICENSE-WUFFS)
-license, all other source code contained within this repository is under the
+license, and the timelapse program, which uses LGPL-2.1 code from libav,
+all other source code contained within this repository is under the
 [BSD 2-clause license](https://github.com/woofdoggo/placeclient/blob/main/LICENSE).
 
 # Table of Contents
