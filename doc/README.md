@@ -1,5 +1,8 @@
 # place archive
 
+Reddit has released the official /r/place data.
+[See here](https://www.reddit.com/r/place/comments/txvk2d/rplace_datasets_april_fools_2022/)
+
 See the [Releases](https://github.com/woofdoggo/placeclient/releases) page to
 download the raw data. The archives contain data from April 2 at circa 2:20 PM
 Eastern Time onwards, with some gaps interspersed throughout early on due to

@@ -1,5 +1,8 @@
 # placeclient
 
+Reddit has released the official /r/place data.
+[See here](https://www.reddit.com/r/place/comments/txvk2d/rplace_datasets_april_fools_2022/)
+
 /r/place scraper, dataset, and tools.
 See the [docs](https://github.com/woofdoggo/placeclient/tree/main/doc) for
 more details.
