@@ -16,6 +16,7 @@ The full dataset is available in [Releases](https://github.com/woofdoggo/placecl
 - [download](https://github.com/woofdoggo/placeclient/tree/main/download) -> downloads and gzips /r/place images
 - [notes](https://github.com/woofdoggo/placeclient/tree/main/notes) -> various notes about the /r/place WebSocket protocol
 - [preprocessor](https://github.com/woofdoggo/placeclient/tree/main/preprocessor) -> tools for generating the diff bins
+- [reddit](https://github.com/woofdoggo/placeclient/tree/main/preprocessor) -> compactor for reddit data beacuse it sucks
 - [ws-scrape](https://github.com/woofdoggo/placeclient/tree/main/ws-scrape) -> client for getting /r/place image URLs
 
 # Licensing
